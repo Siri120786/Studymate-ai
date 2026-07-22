@@ -1,0 +1,503 @@
+:root {
+  --color-bg-top: #0d1128;
+  --color-bg-bottom: #1a1e3d;
+  --color-paper: #fffdf8;
+  --color-border: #e4d9c2;
+  --color-text: #2b241a;
+  --color-text-muted: #7a6f5c;
+
+  --color-heading: #f4ecff;
+  --color-subtitle: #b9b6d9;
+
+  --color-primary: #ff6b57;
+  --color-primary-hover: #ee5a45;
+  --color-secondary: #ffe9a8;
+  --color-secondary-text: #7a5a00;
+
+  --color-notes-tab: #ffd166;
+  --color-summary-tab: #5ec8d8;
+  --color-quiz-tab: #b892ff;
+
+  --color-correct: #2f9e44;
+  --color-incorrect: #e0393e;
+
+  --radius: 16px;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.45), 0 0 40px rgba(255, 210, 130, 0.06);
+  --font-hand: 'Patrick Hand', cursive;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(180deg, var(--color-bg-top) 0%, var(--color-bg-bottom) 65%, #241a3a 100%);
+}
+
+/* ---------- Night sky: stars + skyline glow ---------- */
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(2px 2px at 8% 15%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 22% 8%, #ffffff 100%, transparent 0),
+    radial-gradient(2px 2px at 35% 22%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 48% 5%, #ffffff 100%, transparent 0),
+    radial-gradient(2px 2px at 62% 18%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 75% 10%, #ffffff 100%, transparent 0),
+    radial-gradient(2px 2px at 88% 25%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 95% 6%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 15% 35%, #ffffff 100%, transparent 0),
+    radial-gradient(2px 2px at 55% 32%, #ffffff 100%, transparent 0),
+    radial-gradient(1.5px 1.5px at 80% 40%, #ffffff 100%, transparent 0);
+  opacity: 0.7;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+/* Warm glow low on the page, like distant city / lamp light bouncing off the sky */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 300px at 50% 100%, rgba(255, 180, 110, 0.14), transparent 70%),
+    radial-gradient(400px 220px at 85% 15%, rgba(150, 170, 255, 0.12), transparent 70%);
+}
+
+@keyframes twinkle {
+  from { opacity: 0.5; }
+  to { opacity: 0.9; }
+}
+
+/* Floating fireflies drifting upward */
+.firefly {
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffd98a;
+  box-shadow: 0 0 8px 3px rgba(255, 217, 138, 0.7);
+  animation: float-up 9s linear infinite;
+  opacity: 0;
+}
+
+.firefly:nth-child(1) { left: 12%; animation-delay: 0s; }
+.firefly:nth-child(2) { left: 30%; animation-delay: 2.2s; }
+.firefly:nth-child(3) { left: 55%; animation-delay: 4.4s; }
+.firefly:nth-child(4) { left: 72%; animation-delay: 1.3s; }
+.firefly:nth-child(5) { left: 90%; animation-delay: 3.6s; }
+
+@keyframes float-up {
+  0% {
+    bottom: -5%;
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10% { opacity: 0.9; }
+  50% { transform: translateX(14px); }
+  90% { opacity: 0.7; }
+  100% {
+    bottom: 105%;
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+/* ---------- Layout ---------- */
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 32px 16px 72px;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.app-header h1 {
+  font-family: var(--font-hand);
+  font-size: 3rem;
+  margin: 0;
+  color: var(--color-heading);
+  letter-spacing: 0.5px;
+  transform: rotate(-1deg);
+  text-shadow: 0 0 18px rgba(255, 217, 138, 0.35);
+}
+
+.app-header h1::before {
+  content: '📚 ';
+}
+
+.app-subtitle {
+  color: var(--color-subtitle);
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  font-style: italic;
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* ---------- Notebook card, lit like paper under a desk lamp ---------- */
+
+.card {
+  position: relative;
+  background: var(--color-paper);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 26px 24px 24px;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5), 0 0 46px rgba(255, 210, 130, 0.12);
+  transform: translateY(-2px);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  background-image: radial-gradient(circle, var(--color-bg-bottom) 4px, transparent 4.5px);
+  background-size: 28px 16px;
+  background-position: 14px 0;
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.card-notes {
+  border-top: 6px solid var(--color-notes-tab);
+}
+.card-summary {
+  border-top: 6px solid var(--color-summary-tab);
+}
+.card-quiz {
+  border-top: 6px solid var(--color-quiz-tab);
+}
+
+.card-label {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  margin: 10px 0 10px;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 8px;
+}
+
+.card-title {
+  font-family: var(--font-hand);
+  margin: 6px 0 8px;
+  font-size: 1.6rem;
+}
+
+.card-summary .card-title::before {
+  content: '📖 ';
+}
+
+.card-quiz .card-title::before {
+  content: '🧠 ';
+}
+
+/* ---------- Notes textarea: ruled notebook paper ---------- */
+
+.notes-textarea {
+  width: 100%;
+  padding: 14px 16px 14px 42px;
+  font-size: 1.02rem;
+  font-family: var(--font-body);
+  line-height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  resize: vertical;
+  min-height: 224px;
+  color: var(--color-text);
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(to right, #f2b8b0 0px, #f2b8b0 2px, transparent 2px),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      var(--color-border) 27px,
+      var(--color-border) 28px
+    );
+  background-position: 32px 0, 0 8px;
+  background-repeat: no-repeat, repeat;
+}
+
+.notes-textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.notes-textarea::placeholder {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* ---------- Buttons ---------- */
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 20px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease, opacity 0.15s ease;
+  font-family: var(--font-body);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 3px 0 var(--color-primary-hover);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--color-secondary);
+  color: var(--color-secondary-text);
+  box-shadow: 0 3px 0 #e0b93a;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #ffe08a;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-secondary-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-secondary);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+/* ---------- Summary ---------- */
+
+.summary-text {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  margin: 0;
+  font-size: 1.02rem;
+  padding: 4px 2px;
+}
+
+.error-text {
+  color: var(--color-incorrect);
+  font-weight: 600;
+  background: #fdeceb;
+  border: 1px solid #f6c2bf;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+/* ---------- Spinner ---------- */
+
+.spinner-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+  position: relative;
+}
+
+.spinner::before {
+  content: '✏️';
+  display: inline-block;
+  font-size: 1.3rem;
+  animation: scribble 0.9s ease-in-out infinite;
+}
+
+@keyframes scribble {
+  0%, 100% { transform: rotate(-12deg) translateX(0); }
+  50% { transform: rotate(8deg) translateX(3px); }
+}
+
+/* ---------- Quiz ---------- */
+
+.quiz-score {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 0 0 6px;
+  display: inline-block;
+  background: var(--color-secondary);
+  color: var(--color-secondary-text);
+  padding: 6px 16px;
+  border-radius: 999px;
+  transform: rotate(-2deg);
+  border: 2px dashed #e0b93a;
+}
+
+.quiz-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.quiz-question {
+  background: #fbf8f0;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.quiz-question-text {
+  font-weight: 700;
+  margin: 0 0 12px;
+  font-size: 1.03rem;
+}
+
+.quiz-options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.quiz-option {
+  width: 100%;
+  text-align: left;
+  padding: 11px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-paper);
+  cursor: pointer;
+  font-size: 0.96rem;
+  font-family: var(--font-body);
+  transition: border-color 0.12s ease, transform 0.1s ease, background-color 0.12s ease;
+}
+
+.quiz-option:hover:not(:disabled) {
+  border-color: var(--color-quiz-tab);
+  transform: translateX(2px);
+}
+
+.quiz-option-selected {
+  border-color: var(--color-quiz-tab);
+  background: #f2ecff;
+}
+
+.quiz-option-correct {
+  border-color: var(--color-correct);
+  background: #eaf7ec;
+}
+
+.quiz-option-incorrect {
+  border-color: var(--color-incorrect);
+  background: #fdeceb;
+}
+
+.quiz-explanation {
+  margin: 10px 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+  border-left: 3px solid var(--color-quiz-tab);
+  padding-left: 10px;
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 20px 12px 56px;
+  }
+
+  .app-header h1 {
+    font-size: 2.2rem;
+  }
+
+  .card {
+    padding: 22px 16px 18px;
+  }
+
+  .notes-textarea {
+    padding-left: 30px;
+    background-position: 22px 0, 0 8px;
+  }
+
+  .button-row {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
