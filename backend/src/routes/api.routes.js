@@ -29,9 +29,15 @@ function validateNotes(notes) {
   return null;
 }
 
+const VALID_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+function normalizeDifficulty(difficulty) {
+  return VALID_DIFFICULTIES.includes(difficulty) ? difficulty : 'intermediate';
+}
+
 // POST /api/summarize
 router.post('/summarize', async (req, res) => {
-  const { notes } = req.body || {};
+  const { notes, difficulty } = req.body || {};
+  const level = normalizeDifficulty(difficulty);
 
   const validationError = validateNotes(notes);
   if (validationError) {
@@ -46,7 +52,7 @@ router.post('/summarize', async (req, res) => {
   res.setHeader('X-Accel-Buffering', 'no');
 
   try {
-    await streamSummary(notes, (chunk) => {
+    await streamSummary(notes, level, (chunk) => {
       res.write(chunk);
     });
     res.end();
@@ -65,15 +71,15 @@ router.post('/summarize', async (req, res) => {
 
 // POST /api/quiz
 router.post('/quiz', async (req, res) => {
-  const { notes } = req.body || {};
-
+ const { notes, difficulty } = req.body || {};
+ const level = normalizeDifficulty(difficulty);
   const validationError = validateNotes(notes);
   if (validationError) {
     return res.status(400).json({ error: validationError });
   }
 
   try {
-    const questions = await generateQuiz(notes);
+    const questions = await generateQuiz(notes, level);
     res.status(200).json({ questions });
   } catch (err) {
     console.error('Error while generating quiz:', err);

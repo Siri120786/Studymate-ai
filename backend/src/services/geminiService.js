@@ -22,7 +22,15 @@ const MODEL = 'gemini-flash-latest';
  * @param {(chunk: string) => void} onChunk - called with each text delta as it arrives
  * @returns {Promise<void>} resolves once the stream has finished
  */
-async function streamSummary(notes, onChunk) {
+async function streamSummary(notes, difficulty, onChunk) {
+   const difficultyInstructions = {
+     beginner:
+       'Write for a beginner: use simple, plain language, explain any technical terms, and favor short sentences.',
+     intermediate:
+       'Write for a student with some background in the topic: clear and concise, technical terms are fine without extra explanation.',
+     advanced:
+       'Write for an advanced student: be precise and technical, and you may reference nuanced relationships between concepts without over-simplifying.',
+   };
   const stream = await ai.models.generateContentStream({
     model: MODEL,
     contents: notes,
@@ -32,7 +40,8 @@ async function streamSummary(notes, onChunk) {
         'You are a study assistant. Summarize the study notes the user gives you ' +
         'into a clear, concise summary a student could use to review before an exam. ' +
         'Use short paragraphs and/or bullet points. Do not add information that is not ' +
-        'in the notes. Do not include any preamble like "Here is a summary" - just give the summary.',
+        'in the notes. Do not include any preamble like "Here is a summary" - just give the summary. ' +
+        (difficultyInstructions[difficulty] || difficultyInstructions.intermediate),
     },
   });
 
@@ -55,7 +64,15 @@ async function streamSummary(notes, onChunk) {
  * @param {string} notes - raw study notes pasted by the user
  * @returns {Promise<Array<{question: string, options: string[], correctAnswer: string, explanation: string}>>}
  */
-async function generateQuiz(notes) {
+async function generateQuiz(notes, difficulty) {
+   const difficultyInstructions = {
+     beginner:
+       'Keep questions at a beginner level: test basic recall of definitions and facts stated directly in the notes, using simple wording.',
+     intermediate:
+       'Keep questions at an intermediate level: cover the most important concepts, with some questions requiring light inference beyond direct recall.',
+     advanced:
+       'Keep questions at an advanced level: require synthesis across multiple concepts, application to new scenarios, or distinguishing between closely related ideas. Avoid simple recall questions.',
+   };
   const quizSchema = {
     type: Type.OBJECT,
     properties: {
@@ -92,18 +109,27 @@ async function generateQuiz(notes) {
         'You are a study assistant that writes exam-style multiple-choice questions ' +
         'strictly based on the study notes provided. Questions should cover the most ' +
         'important concepts. Options should be plausible but unambiguous - exactly one ' +
-        'correct answer per question.',
+        'correct answer per question. ' +
+         (difficultyInstructions[difficulty] || difficultyInstructions.intermediate),
       responseMimeType: 'application/json',
       responseSchema: quizSchema,
     },
   });
 
-  let parsed;
-  try {
-    parsed = JSON.parse(response.text);
-  } catch (err) {
-    throw new Error('Gemini did not return a valid JSON quiz response.');
-  }
+  const rawText = response.text || "";
+
+console.log("\n========== GEMINI RAW RESPONSE ==========");
+console.log(rawText);
+console.log("=========================================\n");
+
+let parsed;
+
+try {
+  parsed = JSON.parse(rawText);
+} catch (err) {
+  console.error("JSON Parse Error:", err.message);
+  throw new Error("Gemini did not return a valid JSON quiz response.");
+}
 
   const { questions } = parsed;
 

@@ -6,7 +6,7 @@ import { streamSummary, fetchQuiz } from './api/client.js';
 
 export default function App() {
   const [notes, setNotes] = useState('');
-
+const [difficulty, setDifficulty] = useState('intermediate');
   const [summary, setSummary] = useState('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState('');
@@ -23,7 +23,7 @@ export default function App() {
     setIsSummarizing(true);
 
     try {
-      await streamSummary(notes, (chunk) => {
+      await streamSummary(notes, difficulty, (chunk) => {
         setSummary((prev) => prev + chunk);
       });
     } catch (err) {
@@ -41,7 +41,7 @@ export default function App() {
     setIsGeneratingQuiz(true);
 
     try {
-      const questions = await fetchQuiz(notes);
+      const questions = await fetchQuiz(notes, difficulty);
       setQuiz(questions);
     } catch (err) {
       setQuizError(err.message || 'Something went wrong generating the quiz.');
@@ -66,6 +66,8 @@ export default function App() {
         <NotesInput
           notes={notes}
           onNotesChange={setNotes}
+          difficulty={difficulty}
+          onDifficultyChange={setDifficulty}
           onSummarize={handleSummarize}
           onGenerateQuiz={handleGenerateQuiz}
           isSummarizing={isSummarizing}

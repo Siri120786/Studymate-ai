@@ -1,6 +1,8 @@
 export default function NotesInput({
   notes,
   onNotesChange,
+  difficulty,
+  onDifficultyChange,
   onSummarize,
   onGenerateQuiz,
   isSummarizing,
@@ -22,7 +24,21 @@ export default function NotesInput({
         onChange={(e) => onNotesChange(e.target.value)}
         rows={14}
       />
-    
+     <div className="difficulty-row">
+       <span className="difficulty-label">Level:</span>
+       {['beginner', 'intermediate', 'advanced'].map((level) => (
+         <button
+           key={level}
+           type="button"
+           className={
+             'difficulty-pill' + (difficulty === level ? ' difficulty-pill-active' : '')
+           }
+           onClick={() => onDifficultyChange(level)}
+         >
+           {level.charAt(0).toUpperCase() + level.slice(1)}
+         </button>
+       ))}
+    </div>
       <div className="button-row">
         <button
           className="btn btn-primary"

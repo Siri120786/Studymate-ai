@@ -13,11 +13,11 @@
  * @param {(chunk: string) => void} onChunk
  * @param {AbortSignal} [signal]
  */
-export async function streamSummary(notes, onChunk, signal) {
+export async function streamSummary(notes, difficulty, onChunk, signal) {
   const response = await fetch('/api/summarize', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notes }),
+    body: JSON.stringify({ notes, difficulty }),
     signal,
   });
 
@@ -43,11 +43,11 @@ export async function streamSummary(notes, onChunk, signal) {
  * @param {string} notes
  * @returns {Promise<Array<{question: string, options: string[], correctAnswer: string, explanation: string}>>}
  */
-export async function fetchQuiz(notes) {
+export async function fetchQuiz(notes, difficulty) {
   const response = await fetch('/api/quiz', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ notes }),
+    body: JSON.stringify({ notes, difficulty }),
   });
 
   const body = await safeJson(response);
